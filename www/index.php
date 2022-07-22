@@ -1,5 +1,5 @@
 <?php
-
+$getDebug = isset($_GET["debug"]) && $_Get["debug"] == "true" ? true : false;
 define("IS_DEBUG", $_SERVER["HTTP_HOST"] == "localhost" ? true : false);
 
 $firstname = $lastname = $subject = $email = $message = "";
@@ -65,6 +65,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if($noError){
         $headers = "From: $firstname $lastname <$email>\r\nReply-To: $email"; mail($emailTo, $subject, $emailText, $headers);
+
+
     }
 
 } else {
@@ -78,6 +80,7 @@ function checkInput($input)
     $input = trim($input);
     $input = stripslashes($input);
     $input = htmlspecialchars($input);
+    $input = utf8_encode($input);
     if (IS_DEBUG) {
         echo $input;
         echo "<br>";
