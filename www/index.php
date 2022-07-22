@@ -1,71 +1,100 @@
 <?php
-    
-    define("IS_DEBUG", $_SERVER["HTTP_HOST"] == "localhost" ? true : false);
 
-    $firstname = $lastname = $subject = $email = $message = "";
-    $firstnameError = $lastnameError = $subjectError = $emailError = $messageError = "";
+define("IS_DEBUG", $_SERVER["HTTP_HOST"] == "localhost" ? true : false);
+
+$firstname = $lastname = $subject = $email = $message = "";
+$firstnameError = $lastnameError = $subjectError = $emailError = $messageError = "";
+$noError = true;
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    if (IS_DEBUG) {
+        echo "POST";
+    }
+
     $noError = true;
+    $emailTo = "preena.nejin@outlook.fr";
+    $emailText = "";
 
-    if($_SERVER["REQUEST_METHOD"] == "POST"){
-        if(IS_DEBUG){
-            echo "POST";
-        }
-        // firstname
-        $firstname = isset($_POST["firstname"]) ? checkInput($_POST["firstname"]) : "";
+    // firstname
+    $firstname = isset($_POST["firstname"]) ? checkInput($_POST["firstname"]) : "";
 
-        if(empty($firstname)){
-            $firstnameError = "Veuillez renseigner votre prénom.";
-            $noError = false;
-        }
-        // lastname
-        $lastname = isset($_POST["lastname"]) ? checkInput($_POST["lastname"]) : "";
-        if(empty($lastname)){
-            $lastnameError = "Veuillez renseigner votre nom.";
-            $noError = false;
-        }
-        //
-        $subject = isset($_POST["subject"]) ? checkInput($_POST["subject"]) : "";
-        if(empty($subject)){
-            $subjectError = "Veuillez renseigner le sujet.";
-            $noError = false;
-        }
-        //
-        $email = isset($_POST["email"]) ? checkInput($_POST["email"]) : "";
-        if(!isEmail($email)){
-            $emailError = "Veuillez vérifier votre email.";
-            $noError = false;
-        }
-        //
-        $message = isset($_POST["message"]) ? checkInput($_POST["message"]) : "";
-        if(empty($message)){
-            $messageError = "Veuillez taper votre message.";
-            $noError = false;
-        }
-    }else{
-        if(IS_DEBUG){
-            echo "Pas POST";
-        }
+    if (empty($firstname)) {
+        $firstnameError = "Veuillez renseigner votre prénom.";
+        $noError = false;
+    } else {
+        $emailText .= "Prénom : "
+            . $firstname . "\n";
     }
 
-    function checkInput($input){
-        $input = trim($input);
-        $input = stripslashes($input);
-        $input = htmlspecialchars($input);
-        if(IS_DEBUG){
-            echo $input;
-            echo "<br>";
-        }
-        return $input;
+    // lastname
+    $lastname = isset($_POST["lastname"]) ? checkInput($_POST["lastname"]) : "";
+    if (empty($lastname)) {
+        $lastnameError = "Veuillez renseigner votre nom.";
+        $noError = false;
+    }else {
+        $emailText .= "Nom : "
+            . $lastname . "\n";
+    }
+    //
+    $subject = isset($_POST["subject"]) ? checkInput($_POST["subject"]) : "";
+    if (empty($subject)) {
+        $subjectError = "Veuillez renseigner le sujet.";
+        $noError = false;
+    }
+    //
+    $email = isset($_POST["email"]) ? checkInput($_POST["email"]) : "";
+    if (!isEmail($email)) {
+        $emailError = "Veuillez vérifier votre email.";
+        $noError = false;
+    }else {
+        $emailText .= "email : "
+            . $email . "\n";
+    }
+    //
+    $message = isset($_POST["message"]) ? checkInput($_POST["message"]) : "";
+    if (empty($message)) {
+        $messageError = "Veuillez taper votre message.";
+        $noError = false;
+    }else {
+        $emailText .= "Message : "
+            . $message . "\n";
     }
 
-    function isEmail($email){
-        return filter_var($email, FILTER_VALIDATE_EMAIL);
+    $noError = $firstnameError == "" && $lastnameError == "" && $subjectError == "" && $emailError == "" &&  $messageError == "";
+
+    if($noError){
+        $headers = "From: $firstname $lastname <$email>\r\nReply-To: $email"; mail($emailTo, $subject, $emailText, $headers);
     }
 
-    function getError($error){
-        $html = '<h2 class="error">' . $error .'</h2>'; 
-        return $html; 
+} else {
+    if (IS_DEBUG) {
+        echo "Pas POST";
     }
+}
+
+function checkInput($input)
+{
+    $input = trim($input);
+    $input = stripslashes($input);
+    $input = htmlspecialchars($input);
+    if (IS_DEBUG) {
+        echo $input;
+        echo "<br>";
+    }
+    return $input;
+}
+
+function isEmail($email)
+{
+    return filter_var($email, FILTER_VALIDATE_EMAIL);
+}
+
+function getError($error)
+{
+    $html = '<h2 class="error">' . $error . '</h2>';
+    return $html;
+}
 ?>
 
 <!doctype html>
@@ -80,38 +109,38 @@
 
 <body>
 
-    <div id="formulaire"> 
+    <div id="formulaire">
         <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]) ?>">
-            <input type="text" placeholder="Prénom" name="firstname" value="<?php echo $firstname ?>" <?php echo !IS_DEBUG ? "required" : "" ?> >
+            <input type="text" placeholder="Prénom" name="firstname" value="<?php echo $firstname ?>" <?php echo !IS_DEBUG ? "required" : "" ?>>
             <?php
-                if($firstnameError != ""){
-                    echo getError($firstnameError);
-                }
+            if ($firstnameError != "") {
+                echo getError($firstnameError);
+            }
             ?>
-            <input type="text" placeholder="Nom" name="lastname" value="<?php echo $lastname ?>" <?php echo !IS_DEBUG ? "required" : "" ?> >
+            <input type="text" placeholder="Nom" name="lastname" value="<?php echo $lastname ?>" <?php echo !IS_DEBUG ? "required" : "" ?>>
             <?php
-                if($lastnameError != ""){
-                    echo getError($lastnameError);
-                }
+            if ($lastnameError != "") {
+                echo getError($lastnameError);
+            }
             ?>
-            <input type="text" placeholder="Sujet" name="subject" value="<?php echo $subject ?>" <?php echo !IS_DEBUG ? "required" : "" ?> >
+            <input type="text" placeholder="Sujet" name="subject" value="<?php echo $subject ?>" <?php echo !IS_DEBUG ? "required" : "" ?>>
             <?php
-                if($subjectError != ""){
-                    echo getError($subjectError);
-                }
+            if ($subjectError != "") {
+                echo getError($subjectError);
+            }
             ?>
-            <input type="email" placeholder="exemple@email.com" name="email" value="<?php echo $email ?>" <?php echo !IS_DEBUG ? "required" : "" ?> >
-            <?php 
-                if($emailError != ""){
-                    echo getError($emailError);   
-                }
+            <input type="email" placeholder="exemple@email.com" name="email" value="<?php echo $email ?>" <?php echo !IS_DEBUG ? "required" : "" ?>>
+            <?php
+            if ($emailError != "") {
+                echo getError($emailError);
+            }
             ?>
             <!-- <p class="error">Veuillez vérifier votre email.</p> -->
-            <textarea cols="30" placeholder="Tapez votre message." rows="10" name="message" <?php echo !IS_DEBUG ? "required" : "" ?> ><?php echo $message ?></textarea>
+            <textarea cols="30" placeholder="Tapez votre message." rows="10" name="message" <?php echo !IS_DEBUG ? "required" : "" ?>><?php echo $message ?></textarea>
             <?php
-                if($messageError != ""){
-                    echo getError($messageError);
-                }
+            if ($messageError != "") {
+                echo getError($messageError);
+            }
             ?>
             <!-- <input type="password" placeholder="mot de passe" required> -->
             <!-- <div id="select"> 
@@ -138,8 +167,10 @@
             </select>
             </div> -->
             <input type="submit" value="ENVOYER">
-            <p class="message" style="display: <?php echo (isset($noError) && $noError) ? "block" : "none"; ?>" >Message envoyé !</p>
+            <p class="message" style="display: <?php echo (isset($noError) && $noError) ? "block" : "none"; ?>">Message envoyé !</p>
         </form>
     </div>
-    
-</body></html>
+
+</body>
+
+</html>
