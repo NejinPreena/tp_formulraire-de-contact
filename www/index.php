@@ -2,8 +2,8 @@
 $getDebug = isset($_GET["debug"]) && $_Get["debug"] == "true" ? true : false;
 define("IS_DEBUG", $_SERVER["HTTP_HOST"] == "localhost" ? true : false);
 
-$firstname = $lastname = $subject = $email = $message = "";
-$firstnameError = $lastnameError = $subjectError = $emailError = $messageError = "";
+$firstname = $lastname = $subject = $email = $phone = $message = "";
+$firstnameError = $lastnameError = $subjectError = $emailError = $phoneError = $messageError = "";
 $noError = true;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($lastname)) {
         $lastnameError = "Veuillez renseigner votre nom.";
         $noError = false;
-    }else {
+    } else {
         $emailText .= "Nom : "
             . $lastname . "\n";
     }
@@ -47,28 +47,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (!isEmail($email)) {
         $emailError = "Veuillez vérifier votre email.";
         $noError = false;
-    }else {
+    } else {
         $emailText .= "email : "
             . $email . "\n";
     }
+
+    $phone = isset($_POST["phone"]) ? checkInput($_POST["phone"]) : "";
+    if (!isphone($phone)) {
+        $phoneError = "Veuillez vérifier votre numéro de téléphone.";
+        $noError = false;
+    } else {
+        $phoneText .= "phone : "
+            . $phone . "\n";
+    }
+
     //
     $message = isset($_POST["message"]) ? checkInput($_POST["message"]) : "";
     if (empty($message)) {
         $messageError = "Veuillez taper votre message.";
         $noError = false;
-    }else {
+    } else {
         $emailText .= "Message : "
             . $message . "\n";
     }
 
     $noError = $firstnameError == "" && $lastnameError == "" && $subjectError == "" && $emailError == "" &&  $messageError == "";
 
-    if($noError){
-        $headers = "From: $firstname $lastname <$email>\r\nReply-To: $email"; mail($emailTo, $subject, $emailText, $headers);
-
-
+    if ($noError) {
+        $headers = "From: $firstname $lastname <$email>\r\nReply-To: $email";
+        mail($emailTo, $subject, $emailText, $headers);
     }
-
 } else {
     if (IS_DEBUG) {
         echo "Pas POST";
@@ -136,6 +144,13 @@ function getError($error)
             <?php
             if ($emailError != "") {
                 echo getError($emailError);
+            }
+            ?>
+
+            <input type="phone" placeholder="0690 00 00 00" name="tel" value="<?php echo $phone ?>" <?php echo !IS_DEBUG ? "required" : "" ?>>
+            <?php
+            if ($phoneError != "") {
+                echo getError($phoneError);
             }
             ?>
             <!-- <p class="error">Veuillez vérifier votre email.</p> -->
