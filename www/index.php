@@ -138,6 +138,7 @@
             </select>
             </div> -->
             <input type="submit" value="ENVOYER">
+            <p class="message" style="display: <?php echo (isset($noError) && $noError) ? "block" : "none"; ?>" >Message envoyé !</p>
         </form>
     </div>
     
